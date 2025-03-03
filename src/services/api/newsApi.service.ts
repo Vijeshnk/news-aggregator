@@ -5,6 +5,7 @@ import {
   NewsApiResponse,
   NewsFilters,
 } from "../../types/article.types";
+import { formatDateForAPI } from "../../utils/dateFormatter";
 
 // Adapter to standardize API responses
 const formatNewsApiArticle = (article: any): Article => ({
@@ -42,8 +43,9 @@ export const fetchNewsApiArticles = async (
     if (keywords) params.q = keywords;
     if (category) params.category = category;
     if (source) params.sources = source;
-    if (fromDate) params.from = fromDate;
-    if (toDate) params.to = toDate;
+    if (fromDate) params.from = formatDateForAPI(fromDate);
+    if (toDate) params.to = formatDateForAPI(toDate);
+
 
     const response = await baseAxios.get<NewsApiResponse>(
       `${API_CONFIG.NEWS_API_URL}/everything`,

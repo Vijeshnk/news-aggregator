@@ -1,16 +1,16 @@
 import React from 'react';
 import { Article } from '../../types/article.types';
+import { formatDate } from '../../utils/dateFormatter';
+import { truncateText } from '../../utils/stringUtils';
 
 interface ArticleCardProps {
   article: Article;
 }
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
-  const formattedDate = new Date(article.publishedAt).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+
+  const formattedDate = formatDate(article.publishedAt);
+
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -27,7 +27,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           />
         </div>
       )}
-      
+
       <div className="p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
@@ -35,18 +35,18 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           </span>
           <span className="text-xs text-gray-500">{formattedDate}</span>
         </div>
-        
-        <h3 className="text-lg font-semibold mb-2 line-clamp-2">{article.title}</h3>
-        
+
+        <h3 className="text-lg font-semibold mb-2">{truncateText(article.title, 60)}</h3>
+
         {article.description && (
-          <p className="text-gray-600 mb-4 line-clamp-3">{article.description}</p>
+          <p className="text-gray-600 mb-4">{truncateText(article.description, 120)}</p>
         )}
-        
+
         <div className="flex items-center justify-between">
           {article.author && (
             <span className="text-sm text-gray-500">By {article.author}</span>
           )}
-          
+
           <a
             href={article.url}
             target="_blank"

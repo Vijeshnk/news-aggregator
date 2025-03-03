@@ -1,6 +1,7 @@
 import baseAxios from "./axios";
 import { API_CONFIG } from "../../config/api.config";
 import { Article, NewsFilters } from "../../types/article.types";
+import { formatDateForAPI } from "../../utils/dateFormatter";
 
 // Adapter to standardize API responses
 const formatNYTArticle = (article: any): Article => ({
@@ -38,8 +39,9 @@ export const fetchNYTArticles = async (
 
     if (keywords) params.q = keywords;
     if (category) params.fq = `section_name:${category}`;
-    if (fromDate) params.begin_date = fromDate.replace(/-/g, "");
-    if (toDate) params.end_date = toDate.replace(/-/g, "");
+    if (fromDate) params.begin_date = formatDateForAPI(fromDate);
+    if (toDate) params.end_date = formatDateForAPI(toDate);
+
 
     const response = await baseAxios.get(API_CONFIG.NYT_API_URL, { params });
 
