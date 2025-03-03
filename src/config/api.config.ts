@@ -1,15 +1,16 @@
 // API keys and endpoints
+// API keys and endpoints
 export const API_CONFIG = {
-    // You will need to sign up for API keys for the news services
-    NEWS_API_KEY: "0e8c006a8b414ba2bd9063aa8560f43f", // Replace with your actual API key
-    GUARDIAN_API_KEY: "24f8a59c-5749-4c46-8ff3-769d98d0906e",
-    NYT_API_KEY: "pqbsnKuUKRNOq3KyaxFrZz0AaqS95mmh",
-    
-    // Base URLs for the APIs
-    NEWS_API_URL: "https://newsapi.org/v2",
-    GUARDIAN_API_URL: "https://content.guardianapis.com",
-    NYT_API_URL: "https://api.nytimes.com/svc/search/v2/articlesearch.json",
-  };
+  // Get API keys from environment variables
+  NEWS_API_KEY: import.meta.env.VITE_NEWS_API_KEY || "",
+  GUARDIAN_API_KEY: import.meta.env.VITE_GUARDIAN_API_KEY || "",
+  NYT_API_KEY: import.meta.env.VITE_NYT_API_KEY || "",
+  
+  // Base URLs for the APIs
+  NEWS_API_URL: "https://newsapi.org/v2",
+  GUARDIAN_API_URL: "https://content.guardianapis.com",
+  NYT_API_URL: "https://api.nytimes.com/svc/search/v2/articlesearch.json",
+};
   
   // News categories
   export const NEWS_CATEGORIES = [
