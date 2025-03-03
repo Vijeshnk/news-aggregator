@@ -9,16 +9,11 @@ const HomePage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { articles, isLoading, error, totalResults, filters, activeSources } = useAppSelector(state => state.news);
   
-  // Define source list with valid identifiers
+  // Define source list with our three main sources
   const [sourcesList] = useState([
-    // These should match what we check for in our API services
     { id: 'news-api', name: 'News API' },
     { id: 'the-guardian', name: 'The Guardian' },
     { id: 'new-york-times', name: 'New York Times' },
-    // Add these for NewsAPI specific sources - they should match the VALID_NEWS_API_SOURCES array
-    { id: 'bbc-news', name: 'BBC News' },
-    { id: 'cnn', name: 'CNN' },
-    { id: 'reuters', name: 'Reuters' },
   ]);
 
   // Calculate total pages
@@ -35,18 +30,12 @@ const HomePage: React.FC = () => {
   };
 
   const handleSourceChange = (source: string) => {
-    // If selecting a specific news platform source, set it in active sources
-    if (source === 'news-api' || source === 'the-guardian' || source === 'new-york-times') {
+    // If a source is selected, set it as the only active source
+    if (source) {
       dispatch(setActiveSources([source]));
-      dispatch(setFilters({ source: '' })); // Clear specific source filter
-    } else if (source) {
-      // For specific sources like bbc-news, set the source filter and use only news-api
-      dispatch(setActiveSources(['news-api']));
-      dispatch(setFilters({ source }));
     } else {
-      // If selecting "All Sources", reset both
+      // If selecting "All Sources", reset
       dispatch(setActiveSources([]));
-      dispatch(setFilters({ source: '' }));
     }
   };
 
@@ -63,6 +52,9 @@ const HomePage: React.FC = () => {
     }
   };
 
+  // Determine which source is currently selected for the dropdown
+  const selectedSource = activeSources.length === 1 ? activeSources[0] : '';
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">Latest News</h1>
@@ -72,7 +64,7 @@ const HomePage: React.FC = () => {
         onSourceChange={handleSourceChange}
         onDateChange={handleDateChange}
         selectedCategory={filters.category || ''}
-        selectedSource={filters.source || ''} 
+        selectedSource={selectedSource} // Use the active source for selection
         fromDate={filters.fromDate || ''}
         toDate={filters.toDate || ''}
         sources={sourcesList}
