@@ -26,6 +26,13 @@ export const fetchAllNewsArticles = async (
       apiCalls.push(fetchNYTArticles(filters));
     }
     
+    // If no sources selected, default to all
+    if (apiCalls.length === 0) {
+      apiCalls.push(fetchNewsApiArticles(filters));
+      apiCalls.push(fetchGuardianArticles(filters));
+      apiCalls.push(fetchNYTArticles(filters));
+    }
+    
     // Fetch from all selected sources in parallel
     const results = await Promise.all(apiCalls);
     

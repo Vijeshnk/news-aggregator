@@ -1,6 +1,19 @@
 import baseAxios from './axios';
 import { API_CONFIG } from '../../config/api.config';
 import { Article, NewsApiResponse, NewsFilters } from '../../types/article.types';
+import { formatDateForAPI } from '../../utils/dateFormatter';
+
+// Define valid NewsAPI sources
+const VALID_NEWS_API_SOURCES = [
+  'abc-news',
+  'bbc-news',
+  'cnn',
+  'fox-news',
+  'google-news',
+  'reuters',
+  'the-washington-post',
+  'the-wall-street-journal'
+];
 
 // Adapter to standardize API responses
 const formatNewsApiArticle = (article: any): Article => ({
@@ -32,29 +45,34 @@ export const fetchNewsApiArticles = async (filters: NewsFilters): Promise<{
       pageSize: String(pageSize),
     };
     
-    // Add at least one required parameter
-    if (keywords) {
-      params.q = keywords;
-    } else if (source) {
+    // For NewsAPI, we need to use valid sources, not our internal identifiers
+    // We'll default to a popular news source if the source isn't specified or is our internal 'news-api' identifier
+    if (source && source !== 'news-api' && VALID_NEWS_API_SOURCES.includes(source)) {
       params.sources = source;
+    } else if (keywords) {
+      params.q = keywords;
     } else {
-      // If no keyword or source is provided, use a default query
-      params.q = 'news';  // Default to searching for "news"
+      // Default search term if nothing else is provided
+      params.q = 'top news';
     }
     
-    if (category) params.category = category;
-    if (fromDate) params.from = fromDate;
-    if (toDate) params.to = toDate;
+    // Handle dates
+    if (fromDate) params.from = formatDateForAPI(fromDate);
+    if (toDate) params.to = formatDateForAPI(toDate);
     
-    // Use top-headlines endpoint for category-based searches
-    const endpoint = category 
-      ? `${API_CONFIG.NEWS_API_URL}/top-headlines` 
-      : `${API_CONFIG.NEWS_API_URL}/everything`;
+    // Determine which endpoint to use
+    let endpoint = `${API_CONFIG.NEWS_API_URL}/everything`;
     
-    // If using top-headlines with a category, we need to specify a country
-    if (category && endpoint.includes('top-headlines')) {
-      params.country = 'us'; // Default to US
-      delete params.q; // q parameter isn't needed for top-headlines with category
+    // Use top-headlines with category
+    if (category) {
+      endpoint = `${API_CONFIG.NEWS_API_URL}/top-headlines`;
+      params.category = category;
+      params.country = 'us'; // Default to US for top-headlines
+      
+      // q is optional for top-headlines when category and country are specified
+      if (!keywords) {
+        delete params.q;
+      }
     }
     
     const response = await baseAxios.get<NewsApiResponse>(
