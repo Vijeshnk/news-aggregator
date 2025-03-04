@@ -57,8 +57,8 @@ export const fetchNewsApiArticles = async (filters: NewsFilters): Promise<{
     }
     
     // Handle dates
-    if (fromDate) params.from = formatDateForAPI(fromDate);
-    if (toDate) params.to = formatDateForAPI(toDate);
+    if (fromDate) params.from = fromDate + 'T00:00:00Z';
+    if (toDate) params.to = toDate + 'T23:59:59Z';
     
     // Determine which endpoint to use
     let endpoint = `${API_CONFIG.NEWS_API_URL}/everything`;

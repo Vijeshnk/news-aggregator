@@ -38,8 +38,8 @@ export const fetchGuardianArticles = async (
 
     if (keywords) params.q = keywords;
     if (category) params.section = category;
-    if (fromDate) params["from-date"] = formatDateForAPI(fromDate);
-    if (toDate) params["to-date"] = formatDateForAPI(toDate);
+    if (fromDate) params["from-date"] = fromDate;
+    if (toDate) params["to-date"] = toDate;
 
     const response = await baseAxios.get(
       `${API_CONFIG.GUARDIAN_API_URL}/search`,

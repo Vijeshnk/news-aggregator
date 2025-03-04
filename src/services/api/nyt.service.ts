@@ -39,8 +39,8 @@ export const fetchNYTArticles = async (
 
     if (keywords) params.q = keywords;
     if (category) params.fq = `section_name:${category}`;
-    if (fromDate) params.begin_date = formatDateForAPI(fromDate);
-    if (toDate) params.end_date = formatDateForAPI(toDate);
+    if (fromDate) params.begin_date = fromDate.replace(/-/g, '');
+    if (toDate) params.end_date = toDate.replace(/-/g, '');
 
 
     const response = await baseAxios.get(API_CONFIG.NYT_API_URL, { params });

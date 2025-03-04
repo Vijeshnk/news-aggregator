@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NEWS_CATEGORIES } from '../../config/api.config';
 
 interface FilterBarProps {
@@ -22,6 +22,24 @@ const FilterBar: React.FC<FilterBarProps> = ({
   toDate,
   sources,
 }) => {
+  // Local state for date inputs before applying filter
+  const [localFromDate, setLocalFromDate] = useState(fromDate);
+  const [localToDate, setLocalToDate] = useState(toDate);
+  
+  // Update local state when props change
+  useEffect(() => {
+    setLocalFromDate(fromDate);
+    setLocalToDate(toDate);
+  }, [fromDate, toDate]);
+
+  // Get today's date in YYYY-MM-DD format for max date attribute
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Apply date filter handler
+  const handleApplyDateFilter = () => {
+    onDateChange(localFromDate, localToDate);
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-4 bg-gray-50 p-4 rounded-lg mb-6">
       {/* Category filter */}
@@ -64,33 +82,49 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </select>
       </div>
 
-      {/* Date filters */}
-      <div className="flex-1">
-        <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
-          From Date
-        </label>
-        <input
-          type="date"
-          id="fromDate"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          value={fromDate}
-          onChange={(e) => onDateChange(e.target.value, toDate)}
-          max={toDate || undefined}
-        />
-      </div>
+      {/* Date filter group */}
+      <div className="flex-2 flex flex-col sm:flex-row gap-2">
+        {/* From Date */}
+        <div className="flex-1">
+          <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-1">
+            From Date
+          </label>
+          <input
+            type="date"
+            id="fromDate"
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            value={localFromDate}
+            onChange={(e) => setLocalFromDate(e.target.value)}
+            max={localToDate || today}
+          />
+        </div>
 
-      <div className="flex-1">
-        <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
-          To Date
-        </label>
-        <input
-          type="date"
-          id="toDate"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          value={toDate}
-          onChange={(e) => onDateChange(fromDate, e.target.value)}
-          min={fromDate || undefined}
-        />
+        {/* To Date */}
+        <div className="flex-1">
+          <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-1">
+            To Date
+          </label>
+          <input
+            type="date"
+            id="toDate"
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            value={localToDate}
+            onChange={(e) => setLocalToDate(e.target.value)}
+            min={localFromDate || ''}
+            max={today}
+          />
+        </div>
+
+        {/* Apply button */}
+        <div className="flex items-end pb-[2px]">
+          <button
+            type="button"
+            onClick={handleApplyDateFilter}
+            className="h-10 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Apply
+          </button>
+        </div>
       </div>
     </div>
   );
