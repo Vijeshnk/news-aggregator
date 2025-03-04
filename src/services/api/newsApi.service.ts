@@ -1,7 +1,6 @@
 import baseAxios from './axios';
 import { API_CONFIG } from '../../config/api.config';
 import { Article, NewsApiResponse, NewsFilters } from '../../types/article.types';
-import { formatDateForAPI } from '../../utils/dateFormatter';
 
 // Define valid NewsAPI sources
 const VALID_NEWS_API_SOURCES = [
@@ -39,39 +38,55 @@ export const fetchNewsApiArticles = async (filters: NewsFilters): Promise<{
   try {
     const { keywords, category, source, fromDate, toDate, page, pageSize } = filters;
     
+    // Always use everything endpoint when date filters are applied
+    const useEverythingEndpoint = fromDate || toDate;
+    
     const params: Record<string, string> = {
       apiKey: API_CONFIG.NEWS_API_KEY,
       page: String(page),
       pageSize: String(pageSize),
     };
     
-    // For NewsAPI, we need to use valid sources, not our internal identifiers
-    // We'll default to a popular news source if the source isn't specified or is our internal 'news-api' identifier
-    if (source && source !== 'news-api' && VALID_NEWS_API_SOURCES.includes(source)) {
-      params.sources = source;
-    } else if (keywords) {
-      params.q = keywords;
-    } else {
-      // Default search term if nothing else is provided
-      params.q = 'top news';
-    }
-    
-    // Handle dates
-    if (fromDate) params.from = fromDate + 'T00:00:00Z';
-    if (toDate) params.to = toDate + 'T23:59:59Z';
-    
     // Determine which endpoint to use
-    let endpoint = `${API_CONFIG.NEWS_API_URL}/everything`;
+    let endpoint;
     
-    // Use top-headlines with category
-    if (category) {
-      endpoint = `${API_CONFIG.NEWS_API_URL}/top-headlines`;
-      params.category = category;
-      params.country = 'us'; // Default to US for top-headlines
+    if (useEverythingEndpoint) {
+      // Using /everything endpoint
+      endpoint = `${API_CONFIG.NEWS_API_URL}/everything`;
       
-      // q is optional for top-headlines when category and country are specified
-      if (!keywords) {
-        delete params.q;
+      // Handle the required parameters for /everything
+      if (keywords) {
+        params.q = keywords;
+      } else if (source && VALID_NEWS_API_SOURCES.includes(source)) {
+        params.sources = source;
+      } else {
+        // Default search term if nothing else is provided
+        params.q = category || 'news';
+      }
+      
+      // Format dates for NewsAPI (ISO 8601) - only for /everything endpoint
+      if (fromDate) params.from = fromDate + 'T00:00:00Z';
+      if (toDate) params.to = toDate + 'T23:59:59Z';
+      
+    } else {
+      // Using /top-headlines endpoint (no date filters)
+      endpoint = `${API_CONFIG.NEWS_API_URL}/top-headlines`;
+      
+      // For top-headlines, we need either a category, a source, a q parameter, or a country
+      if (category) {
+        params.category = category;
+      }
+      
+      if (source && VALID_NEWS_API_SOURCES.includes(source)) {
+        params.sources = source;
+      } else if (!params.sources && !category) {
+        // country parameter can't be used with sources parameter
+        params.country = 'us'; // Default to US
+      }
+      
+      // Add q parameter if provided
+      if (keywords) {
+        params.q = keywords;
       }
     }
     
