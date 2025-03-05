@@ -1,7 +1,7 @@
 import baseAxios from "./axios";
 import { API_CONFIG } from "../../config/api.config";
 import { Article, NewsFilters } from "../../types/article.types";
-import { formatDateForAPI } from "../../utils/dateFormatter";
+
 
 // Adapter to standardize API responses
 const formatNYTArticle = (article: any): Article => ({
