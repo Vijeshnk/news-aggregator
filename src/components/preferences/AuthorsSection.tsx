@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../../hooks/reduxHooks';
 import { addPreferredAuthor, removePreferredAuthor } from '../../store/slices/preferencesSlice';
-import { fetchNews, setActiveSources } from '../../store/slices/newsSlice';
 import { fetchArticlesByAuthor } from '../../services/api/news.service';
 
 const AuthorsSection: React.FC = () => {

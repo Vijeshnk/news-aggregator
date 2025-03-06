@@ -11,7 +11,7 @@ import AuthorsSection from '../components/preferences/AuthorsSection';
 const PreferencesPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { preferredSources, preferredCategories, preferredAuthors } = useAppSelector(state => state.preferences);
-  const { articles, isLoading, error, myFeedSources, filters } = useAppSelector(state => state.news);
+  const { articles, isLoading, error,  filters } = useAppSelector(state => state.news);
   const isMobile = useMediaQuery('(max-width: 768px)');
   
   const [isApplyingPreferences, setIsApplyingPreferences] = useState(false);

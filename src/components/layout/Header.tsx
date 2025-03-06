@@ -31,7 +31,7 @@ const Header: React.FC = () => {
   };
   
 
-  const isPreferencesPage = location.pathname === '/preferences';
+
 
   return (
     <header className="bg-white shadow-md">
