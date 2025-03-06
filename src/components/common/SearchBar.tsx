@@ -1,15 +1,23 @@
-import React, { useState } from 'react';
+// src/components/common/SearchBar.tsx
+import React, { useState, useEffect } from 'react';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
   placeholder?: string;
+  initialValue?: string;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ 
   onSearch, 
-  placeholder = 'Search for news articles...' 
+  placeholder = 'Search for news articles...',
+  initialValue = ''
 }) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialValue);
+
+  // Update local state when initialValue changes
+  useEffect(() => {
+    setQuery(initialValue);
+  }, [initialValue]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

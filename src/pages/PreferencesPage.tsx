@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppSelector, useAppDispatch } from '../hooks/reduxHooks';
-import { fetchNews, setActiveSources, setMyFeedSources } from '../store/slices/newsSlice';
+import { fetchNews, setActiveSources, setMyFeedSources, setFilters } from '../store/slices/newsSlice';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import ArticleList from '../components/news/ArticleList';
 import MobileAccordion from '../components/preferences/MobileAccordion';
@@ -11,14 +11,15 @@ import AuthorsSection from '../components/preferences/AuthorsSection';
 const PreferencesPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { preferredSources, preferredCategories } = useAppSelector(state => state.preferences);
-  const { articles, isLoading, error, myFeedSources } = useAppSelector(state => state.news);
+  const { articles, isLoading, error, myFeedSources, filters } = useAppSelector(state => state.news);
   const isMobile = useMediaQuery('(max-width: 768px)');
   
   const [isApplyingPreferences, setIsApplyingPreferences] = useState(false);
   
-  // Track previous preference values to avoid redundant API calls
+  // Track previous preference values and search terms to avoid redundant API calls
   const prevSourcesRef = useRef<string[]>([]);
   const prevCategoriesRef = useRef<string[]>([]);
+  const prevSearchTermRef = useRef<string>('');
   const initialLoadRef = useRef(false);
 
   // Sync preferences to myFeedSources on mount
@@ -27,6 +28,15 @@ const PreferencesPage: React.FC = () => {
       dispatch(setMyFeedSources(preferredSources));
     }
   }, []);
+
+  // Listen for search term changes and fetch if needed
+  useEffect(() => {
+    // If this is not the initial load and search term has changed
+    if (initialLoadRef.current && filters.keywords !== prevSearchTermRef.current) {
+      fetchPersonalizedNews();
+      prevSearchTermRef.current = filters.keywords || '';
+    }
+  }, [filters.keywords]);
 
   // On initial load, fetch if needed
   useEffect(() => {
@@ -42,9 +52,10 @@ const PreferencesPage: React.FC = () => {
       }
     }
     
-    // Save current preferences for comparison
+    // Save current preferences and search term for comparison
     prevSourcesRef.current = [...preferredSources];
     prevCategoriesRef.current = [...preferredCategories];
+    prevSearchTermRef.current = filters.keywords || '';
   }, []);
   
   // Helper to compare arrays
@@ -53,7 +64,7 @@ const PreferencesPage: React.FC = () => {
     return a.every((val, idx) => val === b[idx]);
   };
 
-  // Fetch based on preferences
+  // Fetch based on preferences and current search term
   const fetchPersonalizedNews = () => {
     setIsApplyingPreferences(true);
     
@@ -63,9 +74,9 @@ const PreferencesPage: React.FC = () => {
     // Set active sources temporarily for API call
     dispatch(setActiveSources(preferredSources));
     
-    // Create a NEW filters object instead of using the one from redux
+    // Create a filters object that includes current search keywords
     const myFeedFilters = {
-      keywords: '',
+      keywords: filters.keywords || '',
       category: preferredCategories.length === 1 ? preferredCategories[0] : '',
       source: '',
       fromDate: '',
@@ -84,6 +95,7 @@ const PreferencesPage: React.FC = () => {
       // Update refs after successful fetch
       prevSourcesRef.current = [...preferredSources];
       prevCategoriesRef.current = [...preferredCategories];
+      prevSearchTermRef.current = filters.keywords || '';
     });
   };
   
@@ -91,7 +103,8 @@ const PreferencesPage: React.FC = () => {
   const handleApplyPreferences = () => {
     // Check if preferences have actually changed
     if (!areArraysEqual(prevSourcesRef.current, preferredSources) || 
-        !areArraysEqual(prevCategoriesRef.current, preferredCategories)) {
+        !areArraysEqual(prevCategoriesRef.current, preferredCategories) ||
+        filters.keywords !== prevSearchTermRef.current) {
       fetchPersonalizedNews();
     }
   };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAppSelector, useAppDispatch } from '../hooks/reduxHooks';
 import { fetchNews, setFilters, setActiveSources, setHomePageSources, nextPage, prevPage } from '../store/slices/newsSlice';
 import ArticleList from '../components/news/ArticleList';
@@ -16,17 +16,38 @@ const HomePage: React.FC = () => {
     { id: 'new-york-times', name: 'New York Times' },
   ]);
 
+  // Track last fetched filters and sources to avoid redundant fetches
+  const lastFetchedFiltersRef = useRef<any>(null);
+  const lastFetchedSourcesRef = useRef<string[]>([]);
+  
   // Calculate total pages
   const totalPages = Math.ceil(totalResults / filters.pageSize);
 
-  // Fetch news on component mount and when filters change
+  // Fetch news only when necessary
   useEffect(() => {
-    // Set active sources temporarily for the API call
-    dispatch(setActiveSources(homePageSources));
+    // Check if we already have this data
+    const filtersChanged = JSON.stringify(lastFetchedFiltersRef.current) !== JSON.stringify(filters);
+    const sourcesChanged = !areArraysEqual(lastFetchedSourcesRef.current, homePageSources);
     
-    // Fetch news with the home page sources
-    dispatch(fetchNews({ filters, sources: homePageSources }));
+    // Only fetch if filters or sources changed, or we have no articles
+    if (filtersChanged || sourcesChanged || articles.length === 0) {
+      // Set active sources temporarily for the API call
+      dispatch(setActiveSources(homePageSources));
+      
+      // Fetch news with the home page sources
+      dispatch(fetchNews({ filters, sources: homePageSources }));
+      
+      // Update our tracking refs
+      lastFetchedFiltersRef.current = {...filters};
+      lastFetchedSourcesRef.current = [...homePageSources];
+    }
   }, [dispatch, filters, homePageSources]);
+
+  // Helper to compare arrays
+  const areArraysEqual = (a: string[], b: string[]) => {
+    if (a.length !== b.length) return false;
+    return a.every((val, idx) => val === b[idx]);
+  };
 
   // Handle filter changes
   const handleCategoryChange = (category: string) => {
@@ -80,11 +101,13 @@ const HomePage: React.FC = () => {
         error={error} 
       />
 
-      <Pagination
-        currentPage={filters.page}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={filters.page}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
     </div>
   );
 };
