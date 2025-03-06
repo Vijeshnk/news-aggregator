@@ -55,3 +55,31 @@ export const fetchGuardianArticles = async (
     return { articles: [], totalResults: 0 };
   }
 };
+
+
+export const fetchGuardianArticlesByAuthor = async (author: string): Promise<{
+  articles: Article[];
+  totalResults: number;
+}> => {
+  try {
+    const params: Record<string, string> = {
+      'api-key': API_CONFIG.GUARDIAN_API_KEY,
+      'q': author,
+      'show-tags': 'contributor',
+      'page-size': '20'
+    };
+    
+    const response = await baseAxios.get(
+      `${API_CONFIG.GUARDIAN_API_URL}/search`,
+      { params }
+    );
+    
+    return {
+      articles: response.data.response.results.map(formatGuardianArticle),
+      totalResults: response.data.response.total,
+    };
+  } catch (error) {
+    console.error('Error fetching from Guardian API:', error);
+    return { articles: [], totalResults: 0 };
+  }
+};

@@ -54,3 +54,30 @@ export const fetchNYTArticles = async (
     return { articles: [], totalResults: 0 };
   }
 };
+
+
+export const fetchNYTArticlesByAuthor = async (author: string): Promise<{
+  articles: Article[];
+  totalResults: number;
+}> => {
+  try {
+    const params: Record<string, string> = {
+      'api-key': API_CONFIG.NYT_API_KEY,
+      'fq': `byline:("${author}")`,
+      'page': '0'
+    };
+    
+    const response = await baseAxios.get(
+      API_CONFIG.NYT_API_URL,
+      { params }
+    );
+    
+    return {
+      articles: response.data.response.docs.map(formatNYTArticle),
+      totalResults: response.data.response.meta.hits,
+    };
+  } catch (error) {
+    console.error('Error fetching from NYT API:', error);
+    return { articles: [], totalResults: 0 };
+  }
+};
