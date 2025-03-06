@@ -1,5 +1,5 @@
-# Build stage
-FROM node:20-alpine as build
+# Build and serve using Node.js
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -7,21 +7,27 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy all project files and build
+# Copy all project files (except those in .dockerignore)
 COPY . .
+
+# Build args for environment variables
+ARG VITE_NEWS_API_KEY
+ARG VITE_GUARDIAN_API_KEY
+ARG VITE_NYT_API_KEY
+
+# Set environment variables for build
+ENV VITE_NEWS_API_KEY=${VITE_NEWS_API_KEY}
+ENV VITE_GUARDIAN_API_KEY=${VITE_GUARDIAN_API_KEY}
+ENV VITE_NYT_API_KEY=${VITE_NYT_API_KEY}
+
+# Build the application
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# Install a simple server to serve static files
+RUN npm install -g serve
 
-# Copy the build output to replace the default nginx contents
-COPY --from=build /app/dist /usr/share/nginx/html
+# Expose port 3000
+EXPOSE 3000
 
-# Copy custom nginx config if needed
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port 80
-EXPOSE 80
-
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+# Start the server
+CMD ["serve", "-s", "dist", "-l", "3000"]
