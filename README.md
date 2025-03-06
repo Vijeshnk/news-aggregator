@@ -58,5 +58,5 @@ This application can be easily run in a Docker container.
    Note: Make sure your .env file contains the necessary API keys:
 
    VITE_NEWS_API_KEY=your_key_here
-VITE_GUARDIAN_API_KEY=your_key_here
-VITE_NYT_API_KEY=your_key_here
+   VITE_GUARDIAN_API_KEY=your_key_here
+   VITE_NYT_API_KEY=your_key_here
