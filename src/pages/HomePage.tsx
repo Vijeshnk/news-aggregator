@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../hooks/reduxHooks';
-import { fetchNews, setFilters, setActiveSources, nextPage, prevPage } from '../store/slices/newsSlice';
+import { fetchNews, setFilters, setActiveSources, setHomePageSources, nextPage, prevPage } from '../store/slices/newsSlice';
 import ArticleList from '../components/news/ArticleList';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
 
 const HomePage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { articles, isLoading, error, totalResults, filters, activeSources } = useAppSelector(state => state.news);
+  const { articles, isLoading, error, totalResults, filters, homePageSources } = useAppSelector(state => state.news);
   
   // Define source list with our three main sources
   const [sourcesList] = useState([
@@ -21,8 +21,12 @@ const HomePage: React.FC = () => {
 
   // Fetch news on component mount and when filters change
   useEffect(() => {
-    dispatch(fetchNews({ filters, sources: activeSources }));
-  }, [dispatch, filters, activeSources]);
+    // Set active sources temporarily for the API call
+    dispatch(setActiveSources(homePageSources));
+    
+    // Fetch news with the home page sources
+    dispatch(fetchNews({ filters, sources: homePageSources }));
+  }, [dispatch, filters, homePageSources]);
 
   // Handle filter changes
   const handleCategoryChange = (category: string) => {
@@ -32,10 +36,10 @@ const HomePage: React.FC = () => {
   const handleSourceChange = (source: string) => {
     // If a source is selected, set it as the only active source
     if (source) {
-      dispatch(setActiveSources([source]));
+      dispatch(setHomePageSources([source]));
     } else {
       // If selecting "All Sources", reset
-      dispatch(setActiveSources([]));
+      dispatch(setHomePageSources([]));
     }
   };
 
@@ -53,7 +57,7 @@ const HomePage: React.FC = () => {
   };
 
   // Determine which source is currently selected for the dropdown
-  const selectedSource = activeSources.length === 1 ? activeSources[0] : '';
+  const selectedSource = homePageSources.length === 1 ? homePageSources[0] : '';
 
   return (
     <div>
@@ -64,7 +68,7 @@ const HomePage: React.FC = () => {
         onSourceChange={handleSourceChange}
         onDateChange={handleDateChange}
         selectedCategory={filters.category || ''}
-        selectedSource={selectedSource} // Use the active source for selection
+        selectedSource={selectedSource} // Use the home page sources for selection
         fromDate={filters.fromDate || ''}
         toDate={filters.toDate || ''}
         sources={sourcesList}

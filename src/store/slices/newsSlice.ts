@@ -10,6 +10,8 @@ interface NewsState {
   totalResults: number;
   filters: NewsFilters;
   activeSources: string[];
+  homePageSources: string[]; // New state for home page
+  myFeedSources: string[]; // New state for preferences page
 }
 
 const initialState: NewsState = {
@@ -26,7 +28,9 @@ const initialState: NewsState = {
     page: 1,
     pageSize: 20,
   },
-  activeSources: [],
+  activeSources: [], // Will be used temporarily during API calls
+  homePageSources: [], // Store home page selected sources
+  myFeedSources: [], // Store preferences page selected sources
 };
 
 // Async thunk for fetching news
@@ -55,6 +59,12 @@ const newsSlice = createSlice({
     },
     setActiveSources: (state, action: PayloadAction<string[]>) => {
       state.activeSources = action.payload;
+    },
+    setHomePageSources: (state, action: PayloadAction<string[]>) => {
+      state.homePageSources = action.payload;
+    },
+    setMyFeedSources: (state, action: PayloadAction<string[]>) => {
+      state.myFeedSources = action.payload;
     },
     nextPage: (state) => {
       state.filters.page += 1;
@@ -90,6 +100,8 @@ const newsSlice = createSlice({
 export const {
   setFilters,
   setActiveSources,
+  setHomePageSources,
+  setMyFeedSources,
   nextPage,
   prevPage,
   clearArticles,
