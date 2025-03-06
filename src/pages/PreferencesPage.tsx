@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppSelector, useAppDispatch } from '../hooks/reduxHooks';
-import { fetchNews, setActiveSources, setMyFeedSources, setFilters } from '../store/slices/newsSlice';
+import { fetchNews, setActiveSources, setMyFeedSources } from '../store/slices/newsSlice';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import ArticleList from '../components/news/ArticleList';
 import MobileAccordion from '../components/preferences/MobileAccordion';
@@ -10,59 +10,25 @@ import AuthorsSection from '../components/preferences/AuthorsSection';
 
 const PreferencesPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { preferredSources, preferredCategories } = useAppSelector(state => state.preferences);
+  const { preferredSources, preferredCategories, preferredAuthors } = useAppSelector(state => state.preferences);
   const { articles, isLoading, error, myFeedSources, filters } = useAppSelector(state => state.news);
   const isMobile = useMediaQuery('(max-width: 768px)');
   
   const [isApplyingPreferences, setIsApplyingPreferences] = useState(false);
-  
-  // Track previous preference values and search terms to avoid redundant API calls
-  const prevSourcesRef = useRef<string[]>([]);
-  const prevCategoriesRef = useRef<string[]>([]);
-  const prevSearchTermRef = useRef<string>('');
   const initialLoadRef = useRef(false);
-
-  // Sync preferences to myFeedSources on mount
-  useEffect(() => {
-    if (myFeedSources.length === 0 && preferredSources.length > 0) {
-      dispatch(setMyFeedSources(preferredSources));
-    }
-  }, []);
-
-  // Listen for search term changes and fetch if needed
-  useEffect(() => {
-    // If this is not the initial load and search term has changed
-    if (initialLoadRef.current && filters.keywords !== prevSearchTermRef.current) {
-      fetchPersonalizedNews();
-      prevSearchTermRef.current = filters.keywords || '';
-    }
-  }, [filters.keywords]);
 
   // On initial load, fetch if needed
   useEffect(() => {
     if (!initialLoadRef.current) {
       initialLoadRef.current = true;
       
-      // Only fetch if we have preferences and no articles or preferences changed
-      if ((preferredSources.length > 0 || preferredCategories.length > 0) && 
-          (articles.length === 0 || 
-           !areArraysEqual(prevSourcesRef.current, preferredSources) || 
-           !areArraysEqual(prevCategoriesRef.current, preferredCategories))) {
+      // Only fetch if we have preferences and no articles
+      if ((preferredSources.length > 0 || preferredCategories.length > 0 || preferredAuthors.length > 0) && 
+          articles.length === 0) {
         fetchPersonalizedNews();
       }
     }
-    
-    // Save current preferences and search term for comparison
-    prevSourcesRef.current = [...preferredSources];
-    prevCategoriesRef.current = [...preferredCategories];
-    prevSearchTermRef.current = filters.keywords || '';
   }, []);
-  
-  // Helper to compare arrays
-  const areArraysEqual = (a: string[], b: string[]) => {
-    if (a.length !== b.length) return false;
-    return a.every((val, idx) => val === b[idx]);
-  };
 
   // Fetch based on preferences and current search term
   const fetchPersonalizedNews = () => {
@@ -85,32 +51,32 @@ const PreferencesPage: React.FC = () => {
       pageSize: 20,
     };
     
+    // Log fetch request for debugging
+    console.log('Fetching personalized news with:', {
+      sources: preferredSources,
+      categories: preferredCategories,
+      authors: preferredAuthors,
+      filters: myFeedFilters
+    });
+    
     // Fetch news with custom filters
     dispatch(fetchNews({ 
       filters: myFeedFilters, 
       sources: preferredSources 
     })).finally(() => {
       setIsApplyingPreferences(false);
-      
-      // Update refs after successful fetch
-      prevSourcesRef.current = [...preferredSources];
-      prevCategoriesRef.current = [...preferredCategories];
-      prevSearchTermRef.current = filters.keywords || '';
     });
   };
   
-  // Apply preferences button handler
+  // Apply preferences button handler - Always fetch when clicked
   const handleApplyPreferences = () => {
-    // Check if preferences have actually changed
-    if (!areArraysEqual(prevSourcesRef.current, preferredSources) || 
-        !areArraysEqual(prevCategoriesRef.current, preferredCategories) ||
-        filters.keywords !== prevSearchTermRef.current) {
-      fetchPersonalizedNews();
-    }
+    fetchPersonalizedNews();
   };
 
   // Calculate if any preferences are selected
-  const hasSelectedPreferences = preferredSources.length > 0 || preferredCategories.length > 0;
+  const hasSelectedPreferences = preferredSources.length > 0 || 
+                               preferredCategories.length > 0 || 
+                               preferredAuthors.length > 0;
 
   return (
     <div className={isMobile ? "pb-20" : ""}>
