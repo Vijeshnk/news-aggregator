@@ -1,6 +1,5 @@
 {
   "name": "news-aggregator",
-  "homepage": "https://Vijeshnk.github.io/news-aggregator/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,10 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "docker:build": "docker-compose build",
-    "docker:start": "docker-compose up -d",
-    "docker:stop": "docker-compose down",
-    "predeploy":"npm run build",
-    "deploy":"gh-pages -d dist"
+  "docker:start": "docker-compose up -d",
+  "docker:stop": "docker-compose down"
+
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -22,7 +20,6 @@
     "@reduxjs/toolkit": "^2.6.0",
     "@tailwindcss/vite": "^4.0.9",
     "axios": "^1.8.1",
-    "gh-pages": "^6.3.0",
     "postcss-cli": "^11.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
